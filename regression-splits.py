@@ -217,18 +217,6 @@ class Regression(object):
 
         return self.average
 
-    def display_results(self):
-        alldata  = []
-        #print ""
-        print("Predicted potencies (pEC50) for test compounds...")
-        print("ID // SMILES // cLogP // MW // pEC50 // EC50 (microM)")
-        print("-"*95)
-        row = "ID,SMILES,cLogP,MW, pEC50,EC50\n"
-        alldata.append(row)
-        j = self.predictions.flatten()
-        for i,x in enumerate(j):
-	        print(math.pow(10,x), math.pow(10,self.test_potency[i]))
-
 
 def split_types(smiles, ic50):
 
@@ -265,6 +253,8 @@ def main():
     # Retrieve the data
     filename = args.input_filename
     df = pandas.read_csv(filename)
+    nm = [float(x/1000) for x in df['ic50'].values.tolist()]
+    df['ic50_nm'] = nm
     diff = []
 
     # Check potency predictions 10 times, 15% test size (small sample sizs)
@@ -275,18 +265,13 @@ def main():
         test = df[~mask]
 
         smiles_train = train['smiles'].values.tolist()
-        ic50_train = train['ic50'].values.tolist()
+        ic50_train = train['ic50_nm'].values.tolist()
 
         smiles_test = test['smiles'].values.tolist()
-        ic50_test = test['ic50'].values.tolist()
+        ic50_test = test['ic50_nm'].values.tolist()
 
         run = Regression(smiles_train, smiles_test, ic50_train, ic50_test)
-        '''
-        distance = float(fp_distance)
-        Train_SE = train_se
-        Test_SE = test_se
-        Diff_SE = diff_se
-        '''
+       
         print(run.MUE, run.percent_train_fp_coverage, run.percent_test_fp_coverage, run.fp_distance, run.train_se, run.test_se, run.diff_se)
         diff.append([run.MUE, run.percent_train_fp_coverage, run.percent_test_fp_coverage, run.fp_distance, run.train_se, run.test_se, run.diff_se])
         keras.backend.clear_session()
@@ -294,6 +279,6 @@ def main():
 
         d = pandas.DataFrame(diff)
         d.columns = ['Error(MUE)','FPTrainCoverage','FPTestCoverage','FPDistance','TrainSE','TestSE','DiffSE']
-        d.to_csv('OSM-split-training.csv', index=False)
+        d.to_csv('OSM-split-training_nm.csv', index=False)
 if __name__ == '__main__':
     main()
