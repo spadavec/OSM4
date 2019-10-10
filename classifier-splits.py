@@ -19,6 +19,8 @@ import keras
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import matthews_corrcoef
 from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+
 class Classifier(object):
     def __init__(self, smiles_train, smiles_test, class_train, class_test):
 
@@ -33,7 +35,7 @@ class Classifier(object):
         self.class_test = class_test 
 
         # Compile the Sequential Model1
-        self.create_svm_model()
+        self.create_knn_model()
 
         # Train the model
         self.fit_model()
@@ -64,6 +66,9 @@ class Classifier(object):
 
     def create_svm_model(self):
         self.model = SVC(kernel='linear')
+
+    def create_knn_model(self):
+        self.model = KNeighborsClassifier(n_neighbors=5)
 
     def create_lr_model(self):
         self.model = LogisticRegression(solver='liblinear')
